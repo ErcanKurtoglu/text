@@ -1,0 +1,33 @@
+# docker-compose.prod.yml - To run from Docker Hub
+services:
+  # FastAPI Backend Service
+  backend:
+    image: ercankurtoglu/product-search-backend:latest
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    volumes:
+      - ./db:/app/db
+      - ./logs:/app/logs
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      - DOCKER_ENV=production
+    restart: unless-stopped
+
+  # Streamlit Frontend Service
+  frontend:
+    image: ercankurtoglu/product-search-frontend:latest
+    command: streamlit run app/app.py --server.port 5000 --server.address 0.0.0.0
+    volumes:
+      - ./db:/app/db
+      - ./logs:/app/logs
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+    environment:
+      - DOCKER_ENV=production
+    depends_on:
+      - backend
+    restart: unless-stopped
